@@ -19,10 +19,10 @@ router.post('/signup',function(req, res, next) {
         
                 usermodel.save(function(err,data) {       
                     if(err){
-                        res.send("error");
+                        res.status(500).send("server error");
                     }
                     else{
-                        res.send("success");
+                        res.status(200).send("success");
                     }
                 });
             });
@@ -38,15 +38,15 @@ router.post('/login',function(req, res, next) {
         if(data != null){
             bcrypt.compare(req.body.password, data.password, function(err, result) {
                 if(result === true){
-                    res.send("login successful");
+                    res.status(200).send({auth:true,id:data.id});
                 }
                 else{
-                    res.send("incorrect password");
+                    res.status(401).send({auth:false,id:null});
                 }
             });
         }
         else{
-            res.send("no user found");
+            res.send({auth:false,id:null});
         }
     });
 })
