@@ -28,7 +28,7 @@ router.post('/signup',function(req, res, next) {
             });
         }
         else{
-            res.send("user already exists")
+            res.send({msg:"user already exists"})
         }
     });
 });
