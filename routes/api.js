@@ -19,10 +19,10 @@ router.post('/signup',function(req, res, next) {
         
                 usermodel.save(function(err,data) {       
                     if(err){
-                        res.status(500).send("server error");
+                        res.status(500).send({msg:"server error"});
                     }
                     else{
-                        res.status(200).send("success");
+                        res.status(200).send({msg:"success"});
                     }
                 });
             });
