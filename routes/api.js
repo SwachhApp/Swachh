@@ -41,12 +41,12 @@ router.post('/login',function(req, res, next) {
                     res.status(200).send({auth:true,id:data.id});
                 }
                 else{
-                    res.status(401).send({auth:false,id:null});
+                    res.send({auth:false});
                 }
             });
         }
         else{
-            res.send({auth:false,id:null});
+            res.send({auth:false});
         }
     });
 })
