@@ -4,8 +4,41 @@ var mongoose = require('mongoose');
 var userModel = require('../models/user');
 var adminModel = require('../models/admin');
 var bcrypt = require('bcrypt');
-
+var nodemailer = require('nodemailer');
 const saltRounds = 10;
+
+router.post('/forgotpassword', (req, res) => {
+
+    var pswd = Math.random().toString(36).substring(7);
+    var hashedPassword = bcrypt.hashSync(pswd, 8);
+    userModel.findOneAndUpdate({ email: req.body.email }, { $set: { password: hashedPassword } }, { upsert: false }, (err, account) => {
+        if (account === null) 
+            return res.send({msg:"Invalid Email."});
+
+        var transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.EMAIL_ID,
+                pass: process.env.PASSWORD
+            }
+        });
+        var mailOptions = {
+            from: process.env.EMAIL_ID,
+            to: req.body.email,
+            subject: 'Login Credentials',
+            text: 'Login Credentials',
+            html: 'Please find your login credentials below: <br /><b>Email: </b>' + req.body.email + '<br /><b>Password: </b><span style="color:blue;">' + pswd + "</span></b>"
+        };
+        transporter.sendMail(mailOptions, function (error, info) {
+            if (error) {
+                console.log(error);
+                res.send({msg:"There was an error sending email"});
+            } else {
+                res.send({msg:"Check your mail"});
+            }
+        });
+    });
+});
 
 router.post('/adminsignup',function(req, res, next) {
     adminModel.findOne({"email":req.body.email}, function(error, result) {
