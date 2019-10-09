@@ -22,8 +22,8 @@ require('dotenv').config();
 var mongoose = require('mongoose');
 
 //Set up default mongoose connection
-var mongoDB = "mongodb://localhost:27017/swachh";
-// var mongoDB = process.env.MONGO_URL;
+// var mongoDB = "mongodb://localhost:27017/swachh";
+var mongoDB = process.env.MONGO_URL;
 
 mongoose.connect(mongoDB, { useNewUrlParser: true });
 
