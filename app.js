@@ -4,10 +4,16 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
+var passport = require('passport');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var apiRouter = require('./routes/api')
 var app = express();
+
+//initialize passport
+app.use(passport.initialize());
+var passportMiddleware = require('./middleware/passport');
+passport.use(passportMiddleware);
 
 //Load Environment Variables
 require('dotenv').config();
@@ -16,7 +22,8 @@ require('dotenv').config();
 var mongoose = require('mongoose');
 
 //Set up default mongoose connection
-var mongoDB = process.env.MONGO_URL;
+var mongoDB = "mongodb://localhost:27017/swachh";
+// var mongoDB = process.env.MONGO_URL;
 
 mongoose.connect(mongoDB, { useNewUrlParser: true });
 

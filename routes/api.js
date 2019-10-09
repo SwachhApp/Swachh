@@ -6,6 +6,17 @@ var adminModel = require('../models/admin');
 var bcrypt = require('bcrypt');
 var nodemailer = require('nodemailer');
 const saltRounds = 10;
+var jwt = require('jsonwebtoken')
+
+function createToken(user){
+    return jwt.sign({
+        id: user.id,
+        phone: user.email
+    }, process.env.jwtSecret, {
+        expiresIn: 1000
+    }
+    )
+}
 
 router.post('/forgotpassword', (req, res) => {
 
@@ -107,7 +118,7 @@ router.post('/signup',function(req, res, next) {
                         res.status(500).send({auth:false, msg:"server error"});
                     }
                     else{
-                        res.status(200).send({auth:true, id:data.id, msg:"success"});
+                        res.status(200).send({auth:true, token:createToken(data), msg:"success"});
                     }
                 });
             });
@@ -123,7 +134,7 @@ router.post('/login',function(req, res, next) {
         if(data != null){
             bcrypt.compare(req.body.password, data.password, function(err, result) {
                 if(result === true){
-                    res.status(200).send({auth:true,id:data.id});
+                    res.status(200).send({auth:true,token:createToken(data)});
                 }
                 else{
                     res.send({auth:false});
