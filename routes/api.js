@@ -43,12 +43,12 @@ const saltRounds = 10;
 // });
 
 router.post('/adminsignup',function(req, res, next) {
-    adminModel.findOne({"phone":req.body.phone}, function(error, result) {
+    adminModel.findOne({"email":req.body.email}, function(error, result) {
         if(result == null){
             bcrypt.hash(req.body.password, saltRounds, function(err, hash) {
                 var adminmodel = new adminModel({
                     name:req.body.name,
-                    phone:req.body.phone,
+                    email:req.body.email,
                     password: hash
                 });
         
@@ -71,7 +71,7 @@ router.post('/adminsignup',function(req, res, next) {
 
 router.post('/adminlogin',function(req, res, next) {
     console.log(req.body);
-    adminModel.findOne({"phone":req.body.phone}, function(error, data) {
+    adminModel.findOne({"email":req.body.email}, function(error, data) {
         console.log(data);
         // console.log(req.body.password, data.password);
         
