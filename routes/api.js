@@ -3,50 +3,52 @@ var router = express.Router();
 var mongoose = require('mongoose');
 var userModel = require('../models/user');
 var adminModel = require('../models/admin');
+var vendorModel = require('../models/vendor')
 var bcrypt = require('bcrypt');
 var nodemailer = require('nodemailer');
 const saltRounds = 10;
 
-router.post('/forgotpassword', (req, res) => {
-
-    var pswd = Math.random().toString(36).substring(7);
-    var hashedPassword = bcrypt.hashSync(pswd, 8);
-    userModel.findOneAndUpdate({ email: req.body.email }, { $set: { password: hashedPassword } }, { upsert: false }, (err, account) => {
-        if (account === null) 
-            return res.send({msg:"Invalid Email."});
-
-        var transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: process.env.EMAIL_ID,
-                pass: process.env.PASSWORD
-            }
-        });
-        var mailOptions = {
-            from: process.env.EMAIL_ID,
-            to: req.body.email,
-            subject: 'Login Credentials',
-            text: 'Login Credentials',
-            html: 'Please find your login credentials below: <br /><b>Email: </b>' + req.body.email + '<br /><b>Password: </b><span style="color:blue;">' + pswd + "</span></b>"
-        };
-        transporter.sendMail(mailOptions, function (error, info) {
-            if (error) {
-                console.log(error);
-                res.send({msg:"There was an error sending email"});
-            } else {
-                res.send({msg:"Check your mail"});
-            }
-        });
-    });
-});
+// TODO: Modification of forgot password. Send otp
+// router.post('/forgotpassword', (req, res) => {
+//
+//     var pswd = Math.random().toString(36).substring(7);
+//     var hashedPassword = bcrypt.hashSync(pswd, 8);
+//     userModel.findOneAndUpdate({ phone: req.body.phone }, { $set: { password: hashedPassword } }, { upsert: false }, (err, account) => {
+//         if (account === null)
+//             return res.send({msg:"Invalid Phone."});
+//
+//         var transporter = nodemailer.createTransport({
+//             service: 'gmail',
+//             auth: {
+//                 user: process.env.EMAIL_ID,
+//                 pass: process.env.PASSWORD
+//             }
+//         });
+//         var mailOptions = {
+//             from: process.env.EMAIL_ID,
+//             to: req.body.email,
+//             subject: 'Login Credentials',
+//             text: 'Login Credentials',
+//             html: 'Please find your login credentials below: <br /><b>Email: </b>' + req.body.email + '<br /><b>Password: </b><span style="color:blue;">' + pswd + "</span></b>"
+//         };
+//         transporter.sendMail(mailOptions, function (error, info) {
+//             if (error) {
+//                 console.log(error);
+//                 res.send({msg:"There was an error sending email"});
+//             } else {
+//                 res.send({msg:"Check your mail"});
+//             }
+//         });
+//     });
+// });
 
 router.post('/adminsignup',function(req, res, next) {
-    adminModel.findOne({"email":req.body.email}, function(error, result) {
+    adminModel.findOne({"phone":req.body.phone}, function(error, result) {
         if(result == null){
             bcrypt.hash(req.body.password, saltRounds, function(err, hash) {
                 var adminmodel = new adminModel({
                     name:req.body.name,
-                    email:req.body.email,
+                    phone:req.body.phone,
                     password: hash
                 });
         
@@ -69,7 +71,7 @@ router.post('/adminsignup',function(req, res, next) {
 
 router.post('/adminlogin',function(req, res, next) {
     console.log(req.body);
-    adminModel.findOne({"email":req.body.email}, function(error, data) {
+    adminModel.findOne({"phone":req.body.phone}, function(error, data) {
         console.log(data);
         // console.log(req.body.password, data.password);
         
@@ -89,16 +91,16 @@ router.post('/adminlogin',function(req, res, next) {
             res.send({auth:false});
         }
     });
-})
+});
 
 router.post('/signup',function(req, res, next) {
 
-    userModel.findOne({"email":req.body.email}, function(error, result) {
+    userModel.findOne({"phone":req.body.phone}, function(error, result) {
         if(result == null){
             bcrypt.hash(req.body.password, saltRounds, function(err, hash) {
                 var usermodel = new userModel({
                     name:req.body.name,
-                    email:req.body.email,
+                    phone:req.body.phone,
                     password: hash
                 });
         
@@ -119,7 +121,7 @@ router.post('/signup',function(req, res, next) {
 });
 
 router.post('/login',function(req, res, next) {
-    userModel.findOne({"email":req.body.email}, function(error, data) {
+    userModel.findOne({"phone":req.body.phone}, function(error, data) {
         if(data != null){
             bcrypt.compare(req.body.password, data.password, function(err, result) {
                 if(result === true){
@@ -134,7 +136,6 @@ router.post('/login',function(req, res, next) {
             res.send({auth:false});
         }
     });
-})
-
+});
 
 module.exports = router;

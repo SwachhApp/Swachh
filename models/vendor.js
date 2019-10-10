@@ -1,7 +1,7 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
-var userSchema = new Schema({
+var vendorSchema = new Schema({
     name: { type:String },
     email: { type:String, required: false, default: "" },
     phone: { type: Number, unique: true, required: true},
@@ -26,5 +26,5 @@ var userSchema = new Schema({
     }]
 });
 
-var userModel = mongoose.model('user',userSchema);
-module.exports = userModel;
+var vendorModel = mongoose.model('vendor', vendorSchema);
+module.exports = vendorModel;
