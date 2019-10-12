@@ -11,10 +11,8 @@ var userSchema = new Schema({
     googleOAuth: { type: String, defaule: '' },
     facebookOAuth: { type: String, default: '' },
     verified: { type: Boolean, default: false },
-    otp: [{
-        forgotPassword: { type: Number, default: 0 },
-        accountVerify: { type: Number, default: 0 },
-    }],
+    otpAccountVerify: { type: Number, default: 0 },
+    otpForgotPassword: { type: Number, default: 0 },
     address: [{
         address: { type: String, default: '' },
         landmark: { type: String, default: '' },
