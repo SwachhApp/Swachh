@@ -100,7 +100,7 @@ router.post('/signup',function(req, res, next) {
                     name:req.body.name,
                     phone:req.body.phone,
                     password: hash,
-                    otpAccountVerify: Math.floor(Math.random(9999) * (1111 - 9999)) + 9999
+                    otpAccountVerify: Math.floor(Math.random() * (1111 - 9999)) + 9999
                 });
                 usermodel.save(function(err,data) {
                     if(err){
