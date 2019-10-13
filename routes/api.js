@@ -10,45 +10,83 @@ var nodemailer = require('nodemailer');
 var twilio = require('twilio');
 const saltRounds = 10;
 
+/**
+ * TODO: Forgot password Admin
+ * TODO: Forgot password vendor
+ * TODO: User dashboard data api
+ * TODO: Admin Dashboard Data API
+ * TODO: Place a garbage collection order
+ * TODO: Assign garbage collection to a perticular vendor
+ * TODO: vendor accepting order
+ * TODO: Create Admin(API)
+ * TODO: Create Super Admin(API)
+ * TODO: Create Vendor(API)
+ */
 
 var accountSid = process.env.TWILIO_ACCOUNT_SID; // Your Account SID from www.twilio.com/console
 var authToken = process.env.TWILIO_AUTH_TOKEN;   // Your Auth Token from www.twilio.com/console
 var client = new twilio(accountSid, authToken);
 
-// TODO: Modification of forgot password. Send otp
-// router.post('/forgotpassword', (req, res) => {
-//
-//     var pswd = Math.random().toString(36).substring(7);
-//     var hashedPassword = bcrypt.hashSync(pswd, 8);
-//     userModel.findOneAndUpdate({ phone: req.body.phone }, { $set: { password: hashedPassword } }, { upsert: false }, (err, account) => {
-//         if (account === null)
-//             return res.send({msg:"Invalid Phone."});
-//
-//         var transporter = nodemailer.createTransport({
-//             service: 'gmail',
-//             auth: {
-//                 user: process.env.EMAIL_ID,
-//                 pass: process.env.PASSWORD
-//             }
-//         });
-//         var mailOptions = {
-//             from: process.env.EMAIL_ID,
-//             to: req.body.email,
-//             subject: 'Login Credentials',
-//             text: 'Login Credentials',
-//             html: 'Please find your login credentials below: <br /><b>Email: </b>' + req.body.email + '<br /><b>Password: </b><span style="color:blue;">' + pswd + "</span></b>"
-//         };
-//         transporter.sendMail(mailOptions, function (error, info) {
-//             if (error) {
-//                 console.log(error);
-//                 res.send({msg:"There was an error sending email"});
-//             } else {
-//                 res.send({msg:"Check your mail"});
-//             }
-//         });
-//     });
-// });
+// TODO: AUTH Doesnot required
+router.post('/forgotpassword', (req, res) => {
+    let otp = Math.floor(Math.random() * (9999 - 1111)) + 1111;
+    userModel.findOneAndUpdate({ phone: req.body.phone }, { $set: { otpForgotPassword: otp } }, { upsert: false }, (err, account) => {
+        if (account === null)
+            return res.send({msg:"Invalid Phone."});
+        client.messages.create({
+            body: 'The OTP for the phone number '+account.phone+' is '+account.otpForgotPassword,
+            to: '+91'+account.phone,
+            from: process.env.TWILIO_NUMBER
+        }).then((message) =>  { return res.status(200).send({ otp: true ,id:account.id, msg: "OTP has been sent to the given number"})})
+            .catch( (err) =>  { return res.status(200).send({ otp: false ,id:account.id, msg:"Unable to send OTP"})})
+    });
+});
 
+// TODO: AUTH doesnot required
+router.post('/forgotPassword/change', function(req, res) {
+   userModel.findOne({phone: req.body.phone, otpForgotPassword: req.body.otp}, function(err, data){
+       if(req.body.password !== req.body.confirmPassword){
+           return res.status(500).send({changePassword: false, message: 'Password and confirm password should be same'});
+       }
+       bcrypt.hash(req.body.password, saltRounds, function(err, hash) {
+           userModel.findOneAndUpdate({phone: req.body.phone},{ $set: {password: hash}}, { upsert: false}, (err, account) => {
+               if(account === null)
+                   return res.status(500).send({changePassword: false, message: "Password Change Unsuccessful"});
+               return res.status(200).send({changePassword: true, message: "Password has been changed"});
+           });
+       })
+   })
+});
+
+// TODO: AUTH Required
+router.post('/user/changePassword', (req, res) => {
+    userModel.findById(req.body.id, (error, data)=> {
+        if(data === null)
+            return res.status(500).send({changePassword: false, message: "Not able to find the account"});
+        bcrypt.compare(req.body.password, data.password, function (err, data) {
+            if(data !== null) {
+                if(req.body.newPassword !== req.body.confirmPassword)
+                    return res.status(500).send({changePassword: false, message: "Password and confirm password doesnot match"});
+                bcrypt.hash(req.body.newPassword, saltRounds, function (err, hash) {
+                    userModel.findByIdAndUpdate(req.body.id, { $set: {password: hash}}, { upsert: false}, (err, account) => {
+                        if(account === null)
+                            return res.status(500).send({changePassword: false, message: "Server Error password cannot be changed"});
+                        return res.status(200).send({changePassword: true, message: "Password changed successfully"})
+                    });
+
+                });
+            }
+            else
+            {
+                return res.status(500).send({changePassword: false, message: "Current password in correct"})
+            }
+        });
+
+    })
+
+});
+
+// TODO: AUTH Doesnot required
 router.post('/adminsignup',function(req, res, next) {
     adminModel.findOne({"email":req.body.email}, function(error, result) {
         if(result == null){
@@ -61,38 +99,40 @@ router.post('/adminsignup',function(req, res, next) {
         
                 adminmodel.save(function(err,data) {       
                     if(err){
-                        res.status(200).send({auth:false,msg:"server error"});
+                        return res.status(500).send({auth:false,msg:"server error"});
                     }
                     else{
-                        res.status(200).send({auth:true,msg:"success",id:data.id});
+                        return res.status(200).send({auth:true,msg:"success",id:data.id});
                     }
                 });
             });
         }
         else{
-            res.send({auth:false,msg:"user already exists"})
+            return res.send({auth:false,msg:"user already exists"})
         }
     });
 });
 
+// TODO: AUTH doesnot required
 router.post('/adminlogin',function(req, res, next) {
     adminModel.findOne({"email":req.body.email}, function(error, data) {
         if(data != null){
             bcrypt.compare(req.body.password, data.password, function(err, result) {
                 if(result === true){
-                    res.status(200).send({auth:true,id:data.id});
+                    return res.status(200).send({auth:true,id:data.id});
                 }
                 else{
-                    res.send({auth:false});
+                    return res.send({auth:false});
                 }
             });
         }
         else{
-            res.send({auth:false});
+            return res.send({auth:false});
         }
     });
 });
 
+// TODO: AUTH Doesnot required
 router.post('/signup',function(req, res, next) {
     userModel.findOne({"phone":req.body.phone}, function(error, result) {
         if(result == null){
@@ -101,19 +141,19 @@ router.post('/signup',function(req, res, next) {
                     name:req.body.name,
                     phone:req.body.phone,
                     password: hash,
-                    otpAccountVerify: Math.floor(Math.random() * (1111 - 9999)) + 9999
+                    otpAccountVerify: Math.floor(Math.random() * (9999 - 1111)) + 1111
                 });
                 usermodel.save(function(err,data) {
                     if(err){
-                        res.status(500).send({auth:false, msg:"server error"});
+                        return res.status(500).send({auth:false, msg:"server error"});
                     }
                     else{
                         client.messages.create({
                             body: 'The OTP for the phone number '+data.phone+' is '+data.otpAccountVerify,
                             to: '+91'+data.phone,
                             from: process.env.TWILIO_NUMBER
-                        }).then((message) =>  res.status(200).send({auth:true, otp: true ,id:data.id, msg: "OTP has been sent to the given number"}))
-                            .catch( (err) =>  res.status(200).send({auth:true, otp: false ,id:data.id, msg:"Unable to send OTP"}))
+                        }).then((message) =>  {return res.status(200).send({auth:true, otp: true ,id:data.id, msg: "OTP has been sent to the given number"})})
+                            .catch( (err) =>  {return res.status(500).send({auth:true, otp: false ,id:data.id, msg:"Unable to send OTP"})})
 
                     }
                 });
@@ -129,31 +169,33 @@ router.post('/signup',function(req, res, next) {
 router.post('/otp-verify', function (req, res,next) {
     userModel.findOne({"phone": req.body.phone, "otpAccountVerify": req.body.otp}, function (error, result) {
         if(result == null) {
-            res.status(500).send({verification: false, message: 'Invalid OTP'})
+            return res.status(500).send({verification: false, message: 'Invalid OTP'})
         }
         userModel.findOneAndUpdate({phone: result.phone, otpAccountVerify: result.otpAccountVerify},{ $set: {verified: true}},{ upsert: false },(error, account) => {
            if(account == null)
-               res.status(500).send({verification: false, message: "Internal Server Error"});
-            res.status(200).send({verification: true, message: "Account has been verified", id: account.id});
+               return res.status(500).send({verification: false, message: "Internal Server Error"});
+            return res.status(200).send({verification: true, message: "Account has been verified", id: account.id});
         });
     })
 });
 
+// TODO: AUTH Doesnot required
 router.post('/login',function(req, res, next) {
     userModel.findOne({"phone":req.body.phone}, function(error, data) {
         if(data != null){
             bcrypt.compare(req.body.password, data.password, function(err, result) {
                 if(result === true){
-                    data.verified === false ? res.status(200).send({auth:true, verified: false,id:data.id}) :
-                        res.status(200).send({auth:true,verified: true, id:data.id});
+                    if(data.verified === false)
+                        return res.status(500).send({auth:true, verified: false,message: "Phone number should be verified"});
+                    return res.status(200).send({auth:true,verified: true, id:data.id});
                 }
                 else{
-                    res.status(200).send({auth:false});
+                    return res.status(200).send({auth:false});
                 }
             });
         }
         else{
-            res.send({auth:false});
+            return res.send({auth:false});
         }
     });
 });
