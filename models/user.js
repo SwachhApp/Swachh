@@ -13,7 +13,8 @@ var userSchema = new Schema({
     verified: { type: Boolean, default: false },
     otpAccountVerify: { type: Number, default: 0 },
     otpForgotPassword: { type: Number, default: 0 },
-    address: [{
+    addressAdded: {type:Boolean, default:false},
+    address: {
         address: { type: String, default: '' },
         landmark: { type: String, default: '' },
         state: { type: String, default: ''},
@@ -21,7 +22,7 @@ var userSchema = new Schema({
         lat: { type: String, default: '' },
         lang: { type: String,default: '' },
         dist: { type: String, default: '' }
-    }],
+    },
     raiting: { type:Number, default: 0}
 });
 

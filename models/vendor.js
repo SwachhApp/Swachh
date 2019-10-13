@@ -15,6 +15,7 @@ var vendorSchema = new Schema({
         forgotPassword: { type: Number, default: 0 },
         accountVerify: { type: Number, default: 0 },
     }],
+    addressAdded: {type:Boolean, default:false},
     address: {
         address: { type: String, default: "" },
         landmark: { type: String, default: "" },
