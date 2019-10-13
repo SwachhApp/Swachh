@@ -15,7 +15,7 @@ var vendorSchema = new Schema({
         forgotPassword: { type: Number, default: 0 },
         accountVerify: { type: Number, default: 0 },
     }],
-    address: [{
+    address: {
         address: { type: String, default: "" },
         landmark: { type: String, default: "" },
         state: { type: String, default: ""},
@@ -23,7 +23,8 @@ var vendorSchema = new Schema({
         lat: { type: String, default: "" },
         lang: { type: String,default: "" },
         dist: { type: String, default: "" }
-    }]
+    },
+    rating: {type: Number, default: 0 }
 });
 
 var vendorModel = mongoose.model('vendor', vendorSchema);

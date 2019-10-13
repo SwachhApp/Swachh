@@ -21,7 +21,8 @@ var userSchema = new Schema({
         lat: { type: String, default: '' },
         lang: { type: String,default: '' },
         dist: { type: String, default: '' }
-    }]
+    }],
+    raiting: { type:Number, default: 0}
 });
 
 var userModel = mongoose.model('user',userSchema);
