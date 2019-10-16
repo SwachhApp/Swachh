@@ -10,7 +10,7 @@ var adminSchema = new Schema({
     lastLogin: { type: Date, default: Date.now() },
     vendorsCreated: { type: Number, default: 0 },
     superAdmin: { type:Boolean, default: false },
-    phone: { type: Number, requird: false, default: 0 },
+    phone: { type: Number, requird: false },
     googleOAuth: { type: String, default: '' },
     facebookOAuth: { type: String, default: '' }
 });
