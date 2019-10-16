@@ -59,7 +59,7 @@ router.post('admin/create', (req, res, next) => {
 
 });
 
-// Create General Admin API
+// Create Super admin Admin API
 router.post('superAdmin/create', (req, res, next) => {
     var adminPassword = process.env.SUPER_ADMIN_PASSWORD;
     if (adminPassword !== req.body.adminPassword)
@@ -92,7 +92,6 @@ router.post('superAdmin/create', (req, res, next) => {
         });
     });
 });
-
 
 // TODO: AUTH Doesnot required
 router.post('/forgotpassword', (req, res) => {
@@ -162,31 +161,6 @@ router.post('/user/changePassword', (req, res) => {
 
     })
 
-});
-
-// TODO: AUTH Doesnot required
-router.post('/adminsignup', function (req, res, next) {
-    adminModel.findOne({"email": req.body.email}, function (error, result) {
-        if (result == null) {
-            bcrypt.hash(req.body.password, saltRounds, function (err, hash) {
-                var adminmodel = new adminModel({
-                    name: req.body.name,
-                    email: req.body.email,
-                    password: hash
-                });
-
-                adminmodel.save(function (err, data) {
-                    if (err) {
-                        return res.status(500).send({auth: false, msg: "server error"});
-                    } else {
-                        return res.status(200).send({auth: true, msg: "success", id: data.id});
-                    }
-                });
-            });
-        } else {
-            return res.send({auth: false, msg: "user already exists"})
-        }
-    });
 });
 
 // TODO: AUTH doesnot required
