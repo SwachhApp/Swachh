@@ -16,7 +16,8 @@ var orderSchema = new Schema({
     vendorLoc: {
         lat: {type: String, default: ""},
         lang: {type:String, default: ""}
-    }
+    },
+    completed: { type: Boolean, default: false}
 });
 
 var orderModel = mongoose.model('order',orderSchema);
