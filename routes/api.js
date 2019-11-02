@@ -11,15 +11,12 @@ var twilio = require('twilio');
 const saltRounds = 10;
 
 /**
- * TODO: Forgot password Admin
  * TODO: Forgot password vendor
  * TODO: User dashboard data api
  * TODO: Admin Dashboard Data API
  * TODO: Place a garbage collection order
  * TODO: Assign garbage collection to a perticular vendor
  * TODO: vendor accepting order
- * TODO: Create Admin(API)
- * TODO: Create Super Admin(API)
  * TODO: Create Vendor(API)
  */
 
@@ -28,7 +25,7 @@ var authToken = process.env.TWILIO_AUTH_TOKEN;   // Your Auth Token from www.twi
 var client = new twilio(accountSid, authToken);
 
 // Create General Admin API
-router.post('admin/create', (req, res, next) => {
+router.post('/admin/create', (req, res, next) => {
     var adminPassword = process.env.ADMIN_PASSWORD;
     if (adminPassword !== req.body.adminPassword)
         return res.status(400).send({register: false, message: 'Password doesnot match'});
@@ -39,7 +36,7 @@ router.post('admin/create', (req, res, next) => {
     if (!req.body.password)
         return res.status(500).send({register: false, message: 'Admin password required'});
     adminModel.findOne({email: req.body.email}, (err, account) => {
-        if (account === null)
+        if (account !== null)
             return res.status(500).send({register: false, message: 'Admin email is exsisted'})
         bcrypt.hash(req.body.password, saltRounds, (err, hash) => {
             var admin = new adminModel({
@@ -60,7 +57,7 @@ router.post('admin/create', (req, res, next) => {
 });
 
 // Create Super admin Admin API
-router.post('superAdmin/create', (req, res, next) => {
+router.post('/superAdmin/create', (req, res, next) => {
     var adminPassword = process.env.SUPER_ADMIN_PASSWORD;
     if (adminPassword !== req.body.adminPassword)
         return res.status(400).send({register: false, message: 'Password doesnot match'});
@@ -71,7 +68,7 @@ router.post('superAdmin/create', (req, res, next) => {
     if (!req.body.password)
         return res.status(500).send({register: false, message: 'Admin password required'});
     adminModel.findOne({email: req.body.email}, (err, account) => {
-        if (account === null)
+        if (account !== null)
             return res.status(500).send({register: false, message: 'Admin email is exsisted'})
         bcrypt.hash(req.body.password, saltRounds, (err, hash) => {
             var admin = new adminModel({
@@ -91,6 +88,33 @@ router.post('superAdmin/create', (req, res, next) => {
             })
         });
     });
+});
+
+// TODO: AUTH Required
+router.post('/admin/changePassword', (req, res, next) => {
+   adminModel.findById(req.body.id, (err, data) => {
+      if(data === null)
+          res.status(500).send({changePassword: false, message: 'User doesnot exsist'});
+      bcrypt.compare(req.body.password, data.password, (err, data)=> {
+          if(data === false)
+              return res.status(500).send({changePassword: false, message: 'Current password doesnot match'})
+          if (req.body.newPassword !== req.body.confirmPassword)
+              return res.status(500).send({
+                  changePassword: false,
+                  message: "Password and confirm password doesnot match"
+              });
+          bcrypt.hash(req.body.newPassword, saltRounds, (err, hash) => {
+              adminModel.findByIdAndUpdate(req.body.id, { $set: {password: hash}}, { upsert: false }, (err, account) => {
+                  if (account === null)
+                      return res.status(500).send({
+                          changePassword: false,
+                          message: "Server Error password cannot be changed"
+                      });
+                  return res.status(200).send({changePassword: true, message: "Password changed successfully"})
+              });
+          });
+      })
+   });
 });
 
 // TODO: AUTH Doesnot required
@@ -155,7 +179,7 @@ router.post('/user/changePassword', (req, res) => {
 
                 });
             } else {
-                return res.status(500).send({changePassword: false, message: "Current password in correct"})
+                return res.status(500).send({changePassword: false, message: "Current password incorrect"})
             }
         });
 
