@@ -24,6 +24,11 @@ var accountSid = process.env.TWILIO_ACCOUNT_SID; // Your Account SID from www.tw
 var authToken = process.env.TWILIO_AUTH_TOKEN;   // Your Auth Token from www.twilio.com/console
 var client = new twilio(accountSid, authToken);
 
+//Vendor create API
+router.post('/vendor/create', (req, res, next) => {
+    let validate = false;
+});
+
 // Create General Admin API
 router.post('/admin/create', (req, res, next) => {
     var adminPassword = process.env.ADMIN_PASSWORD;
@@ -118,7 +123,7 @@ router.post('/admin/changePassword', (req, res, next) => {
 });
 
 // TODO: AUTH Doesnot required
-router.post('/forgotpassword', (req, res) => {
+router.post('/user/forgotpassword', (req, res) => {
     let otp = Math.floor(Math.random() * (9999 - 1111)) + 1111;
     userModel.findOneAndUpdate({phone: req.body.phone}, {$set: {otpForgotPassword: otp}}, {upsert: false}, (err, account) => {
         if (account === null)
@@ -137,7 +142,7 @@ router.post('/forgotpassword', (req, res) => {
 });
 
 // TODO: AUTH doesnot required
-router.post('/forgotPassword/change', function (req, res) {
+router.post('/user/forgotPassword/change', function (req, res) {
     userModel.findOne({phone: req.body.phone, otpForgotPassword: req.body.otp}, function (err, data) {
         if (req.body.password !== req.body.confirmPassword) {
             return res.status(500).send({
@@ -188,7 +193,7 @@ router.post('/user/changePassword', (req, res) => {
 });
 
 // TODO: AUTH doesnot required
-router.post('/adminlogin', function (req, res, next) {
+router.post('/admin/login', function (req, res, next) {
     adminModel.findOne({"email": req.body.email}, function (error, data) {
         if (data != null) {
             bcrypt.compare(req.body.password, data.password, function (err, result) {
@@ -267,7 +272,7 @@ router.post('/otp-verify', function (req, res, next) {
 });
 
 // TODO: AUTH Doesnot required
-router.post('/login', function (req, res, next) {
+router.post('/user/login', function (req, res, next) {
     userModel.findOne({"phone": req.body.phone}, function (error, data) {
         if (data != null) {
             bcrypt.compare(req.body.password, data.password, function (err, result) {
